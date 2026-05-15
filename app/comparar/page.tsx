@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { Suspense, useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, RotateCcw } from "lucide-react";
@@ -9,7 +9,28 @@ import { StationPicker } from "@/components/StationPicker";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { ESTACIONES, getEstacion } from "@/lib/constants";
 
+// Wrapper exportado: envuelve el contenido en Suspense porque
+// useSearchParams() requiere boundary en Next.js 14 build estático.
 export default function CompararPage() {
+  return (
+    <Suspense fallback={<CompararFallback />}>
+      <CompararInner />
+    </Suspense>
+  );
+}
+
+function CompararFallback() {
+  return (
+    <div className="app-shell">
+      <RankingSidebar />
+      <main className="main">
+        <div style={{ padding: 40, color: "var(--ink-3)" }}>Cargando comparador…</div>
+      </main>
+    </div>
+  );
+}
+
+function CompararInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
