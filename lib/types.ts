@@ -6,6 +6,8 @@
 /*                            NUEVO MODELO (V2)                               */
 /* -------------------------------------------------------------------------- */
 
+export type TimeFilterKey = "1M" | "3M" | "6M" | "12M" | "YTD" | "ALL";
+
 export type ScoreCode = "FDS" | "EVH" | "CRT" | "FLT" | "REO" | "CMT";
 
 export type Score = {
