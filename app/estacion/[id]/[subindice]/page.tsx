@@ -38,7 +38,7 @@ export default function SubIndexDetailPage({
 }: {
   params: { id: string; subindice: string };
 }) {
-  const [filter, setFilter] = useState<TimeFilterKey>("12m");
+  const [filter, setFilter] = useState<TimeFilterKey>("12M");
 
   const estacion = getEstacion(params.id);
   const subIndiceUpper = params.subindice.toUpperCase() as SubIndice;
