@@ -27,9 +27,9 @@ import {
 } from "@/lib/granularData";
 import { aplicarFiltro } from "@/lib/filters";
 import { lastValue, prevValue, yoyValue } from "@/lib/timeSeries";
-import type { SubIndice, TimeFilterKey } from "@/lib/types";
+import type { SubIndice, SubIndiceCode, TimeFilterKey } from "@/lib/types";
 
-const SUB_INDICES_VALID: SubIndice[] = ["SEI", "OAI", "CTI", "RPC", "FCC"];
+const SUB_INDICES_VALID: SubIndiceCode[] = ["SEI", "OAI", "CTI", "RPC", "FCC"];
 
 const CHART_COLORS = { primary: "#1c3d5a", secondary: "#b88a4a" };
 
