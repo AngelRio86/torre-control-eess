@@ -1,18 +1,140 @@
-// Torre de Control EESS — Modelo de datos
-// Generated from Torre_de_Control_EESS_BBDD.xlsx
+// lib/types.ts
+// Torre de Control EESS — modelo de 6 scores independientes + arquetipos.
+// Mantiene los tipos legacy (IMP, sub-índices) para no romper componentes existentes.
 
-export type IMPCategoria =
-  | "★ Estrella"
-  | "Sólida"
-  | "Estable con riesgos"
-  | "Vulnerable"
-  | "Crítica";
+/* -------------------------------------------------------------------------- */
+/*                            NUEVO MODELO (V2)                               */
+/* -------------------------------------------------------------------------- */
 
-export type AlertaSeveridad = "ALTA" | "MEDIA" | "INFO";
+export type ScoreCode = "FDS" | "EVH" | "CRT" | "FLT" | "REO" | "CMT";
 
-export type SubIndice = "SEI" | "OAI" | "CTI" | "RPC" | "FCC";
+export type Score = {
+  codigo: ScoreCode;
+  nombre: string;       // ES — para UI
+  nombreEN: string;     // EN — para contexto / tooltips
+  descripcion: string;
+  score: number;        // 0-100
+};
 
-export interface Estacion {
+export type ScoresEstacion = {
+  FDS: Score; // Fuel Defense
+  EVH: Score; // EV Hub Potential
+  CRT: Score; // Convenience Retail
+  FLT: Score; // Fleet & Commercial
+  REO: Score; // Real Estate Optionality
+  CMT: Score; // Competitive Moat
+};
+
+export type ArquetipoCode =
+  | "MULTI_HIGHWAY"
+  | "URBAN_CONVENIENCE"
+  | "FLEET_COMMERCIAL"
+  | "CONVENIENCE_LOCAL"
+  | "CORRIDOR_MULTI"
+  | "CONTROLLED_DECLINE";
+
+export type Arquetipo = {
+  codigo: ArquetipoCode;
+  nombre: string;
+  descripcion: string;
+  scoresClave: ScoreCode[];   // 2-3 scores que definen el arquetipo
+  recomendacion: string;
+  inversion: "alta" | "media" | "baja" | "desinversion";
+  color: string;       // clave semántica (igual que CATEGORIAS_IMP.color)
+  colorMapa: string;   // hex para marcadores y leyenda
+};
+
+/* -------------------------------------------------------------------------- */
+/*                           TIPOS COMPARTIDOS                                */
+/* -------------------------------------------------------------------------- */
+
+export type PnL = {
+  volumenFuelTotal: number;
+  beneficioBrutoFuel: number;
+  ventasTotalTienda: number;
+  ingresosServicios: number;
+  beneficioBrutoTotal: number;
+  opexTotal: number;
+  ebitda: number;
+  margenEbitda: number;
+  activoNeto: number;
+  superficieParcela: number;
+  roic: number;
+  ebitdaPorM2: number;
+};
+
+export type Alerta = {
+  id: number;
+  fecha: string;
+  estacionId: string;
+  estacionNombre: string;
+  tipo: string;
+  subIndice: string;                // ahora contiene códigos del nuevo modelo (FDS-A, EVH-A, ...)
+  severidad: "ALTA" | "MEDIA" | "INFO";
+  disparador: string;
+  descripcion: string;
+  accion: string;
+  responsable: string;
+};
+
+/* -------------------------------------------------------------------------- */
+/*                  TIPOS LEGACY (mantener para compatibilidad)               */
+/*  Otros componentes (StationsTable, NetworkMap, IMPDistribution, cockpit,   */
+/*  comparar) leen estos campos. Se mantienen poblados con datos derivados    */
+/*  del nuevo modelo para no romper la build.                                 */
+/* -------------------------------------------------------------------------- */
+
+export type CategoriaIMP = {
+  rango: [number, number];
+  nombre: string;
+  recomendacion: string;
+  color: string;
+  colorMapa: string;
+};
+
+export type SubDimension = {
+  codigo: string;
+  nombre: string;
+  peso: number;
+  score: number;
+};
+
+export type SubIndice = {
+  codigo: "SEI" | "OAI" | "CTI" | "RPC" | "FCC";
+  nombre: string;
+  descripcion: string;
+  peso: number;
+  score: number;
+  subdimensiones: SubDimension[];
+};
+
+export type SubIndices = {
+  SEI: SubIndice;
+  OAI: SubIndice;
+  CTI: SubIndice;
+  RPC: SubIndice;
+  FCC: SubIndice;
+};
+
+export type RankingIMP = {
+  posicion: number;
+  estacionId: string;
+  sei: number;
+  oai: number;
+  cti: number;
+  rpc: number;
+  fcc: number;
+  imp: number;
+  recomendacion: string;
+  categoria: string;
+};
+
+/* -------------------------------------------------------------------------- */
+/*                          ESTACIÓN COMPLETA                                 */
+/* -------------------------------------------------------------------------- */
+
+export type EstacionCompleta = {
+  // Identificación
   id: string;
   nombre: string;
   marca: string;
@@ -28,172 +150,19 @@ export interface Estacion {
   anyoApertura: number;
   ultimaReforma: number;
   protagonista?: boolean;
-  perfil?: PerfilEstacion;
-}
+  perfil: string;
 
-export type PerfilEstacion =
-  | "premium-urbana"
-  | "corredor-24h"
-  | "low-cost-urbana"
-  | "poligono-b2b"
-  | "critica";
+  // Nuevo modelo (V2)
+  scores: ScoresEstacion;
+  arquetipo: ArquetipoCode;
 
-export interface SubIndiceScore {
-  codigo: SubIndice;
-  nombre: string;
-  descripcion: string;
-  peso: number;
-  score: number;
-  subdimensiones: SubDimension[];
-}
-
-export interface SubDimension {
-  codigo: string;
-  nombre: string;
-  peso: number;
-  score: number;
-}
-
-export interface PnL {
-  volumenFuelTotal: number;
-  beneficioBrutoFuel: number;
-  ventasTotalTienda: number;
-  ingresosServicios: number;
-  beneficioBrutoTotal: number;
-  opexTotal: number;
-  ebitda: number;
-  margenEbitda: number;
-  activoNeto: number;
-  superficieParcela: number;
-  roic: number;
-  ebitdaPorM2: number;
-}
-
-export interface RankingIMP {
-  posicion: number;
-  estacionId: string;
-  sei: number;
-  oai: number;
-  cti: number;
-  rpc: number;
-  fcc: number;
-  imp: number;
-  categoria: IMPCategoria;
-  recomendacion: string;
-}
-
-export interface Alerta {
-  id: number;
-  fecha: string;
-  estacionId: string;
-  estacionNombre: string;
-  tipo: string;
-  subIndice: string;
-  severidad: AlertaSeveridad;
-  disparador: string;
-  descripcion: string;
-  responsable: string;
-  accion?: string;
-}
-
-export interface EstacionCompleta extends Estacion {
-  ranking: RankingIMP;
-  subIndices: {
-    SEI: SubIndiceScore;
-    OAI: SubIndiceScore;
-    CTI: SubIndiceScore;
-    RPC: SubIndiceScore;
-    FCC: SubIndiceScore;
-  };
+  // P&L (sin cambios)
   pnl: PnL;
+
+  // Alertas (estructura sin cambios, códigos nuevos en subIndice)
   alertas: Alerta[];
-}
 
-export interface CategoriaIMP {
-  rango: [number, number];
-  nombre: IMPCategoria;
-  recomendacion: string;
-  color: string;
-  colorMapa: string;
-}
-
-/* -------------------------------------------------------------------------- */
-/*                  V2 — SERIES TEMPORALES Y GRANULARIDAD                     */
-/* -------------------------------------------------------------------------- */
-
-export interface TimeSeriesPoint {
-  date: string;
-  value: number;
-}
-
-export type TimeFilterKey = "12m" | "3m" | "yoy" | "vs-prev-year";
-
-export interface TimeFilter {
-  key: TimeFilterKey;
-  label: string;
-  description: string;
-}
-
-export interface GranularMetric {
-  codigo: string;
-  nombre: string;
-  unidad: string;
-  valorActual: number;
-  valorMesAnterior: number;
-  valorYoY: number;
-  serie: TimeSeriesPoint[];
-}
-
-export type CategoriaTiendaCodigo =
-  | "bebidas-frias"
-  | "bebidas-calientes"
-  | "snacks"
-  | "chicles-caramelos"
-  | "tabaco"
-  | "prensa-revistas"
-  | "conveniencia"
-  | "higiene";
-
-export interface Sku {
-  codigo: string;
-  nombre: string;
-  marca: string;
-  categoria: CategoriaTiendaCodigo;
-  formato: string;
-  precioVenta: number;
-  margenPct: number;
-  pesoBase: number;
-}
-
-export interface CategoriaTienda {
-  codigo: CategoriaTiendaCodigo;
-  nombre: string;
-  descripcion: string;
-}
-
-export interface SkuVentas {
-  sku: Sku;
-  unidadesMes: number;
-  ingresosMes: number;
-  margenMes: number;
-  unidadesMesAnterior: number;
-  unidadesYoY: number;
-  serieUnidades: TimeSeriesPoint[];
-  serieIngresos: TimeSeriesPoint[];
-}
-
-export interface CategoriaVentas {
-  categoria: CategoriaTienda;
-  unidadesMes: number;
-  ingresosMes: number;
-  ingresosMesAnterior: number;
-  ingresosYoY: number;
-  serieIngresos: TimeSeriesPoint[];
-  skus: SkuVentas[];
-}
-
-export interface ComparacionFila {
-  codigo: string;
-  nombre: string;
-  valores: { estacionId: string; valor: number; color?: string }[];
-}
+  // Legacy — derivados del nuevo modelo para no romper componentes existentes
+  ranking: RankingIMP;
+  subIndices: SubIndices;
+};
