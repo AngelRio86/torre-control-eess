@@ -27,7 +27,7 @@ import {
 } from "@/lib/granularData";
 import { aplicarFiltro } from "@/lib/filters";
 import { lastValue, prevValue, yoyValue } from "@/lib/timeSeries";
-import type { SubIndice, SubIndiceCode, TimeFilterKey } from "@/lib/types";
+import type { SubIndiceCode, TimeFilterKey } from "@/lib/types";
 
 const SUB_INDICES_VALID: SubIndiceCode[] = ["SEI", "OAI", "CTI", "RPC", "FCC"];
 
