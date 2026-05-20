@@ -24,7 +24,7 @@ export function ActionPlanCard({
   recomendacion: string;
   imp: number;
 }) {
-  const Icon = ICON_BY_CAT[categoria.nombre];
+  const Icon = ICON_BY_CAT[categoria.nombre as keyof typeof ICON_BY_CAT];
   return (
     <div className={`action-plan ${categoria.color}`} role="region" aria-label="Plan de acción">
       <div className="action-plan-icon">
