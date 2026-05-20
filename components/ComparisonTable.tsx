@@ -9,9 +9,9 @@ import { TimeSeriesChart } from "./TimeSeriesChart";
 import { FilterBar } from "./FilterBar";
 import { aplicarFiltro } from "@/lib/filters";
 import { getSerieSubIndice } from "@/lib/granularData";
-import type { EstacionCompleta, SubIndice, TimeFilterKey } from "@/lib/types";
+import type { EstacionCompleta, SubIndice, SubIndiceCode, TimeFilterKey } from "@/lib/types";
 
-const TODOS_INDICES: SubIndice[] = ["SEI", "OAI", "CTI", "RPC", "FCC"];
+const TODOS_INDICES: SubIndiceCode[] = ["SEI", "OAI", "CTI", "RPC", "FCC"];
 
 const COLOR_PER_STATION = ["#1c3d5a", "#b88a4a", "#2faa66"];
 
@@ -28,11 +28,11 @@ const COLOR_BY_SCORE = (s: number) => {
 };
 
 export function ComparisonTable({ estaciones }: Props) {
-  const [shownIndices, setShownIndices] = useState<SubIndice[]>(TODOS_INDICES);
-  const [drillIndex, setDrillIndex] = useState<SubIndice | null>(null);
-  const [filter, setFilter] = useState<TimeFilterKey>("12m");
+  const [shownIndices, setShownIndices] = useState<SubIndiceCode[]>(TODOS_INDICES);
+  const [drillIndex, setDrillIndex] = useState<SubIndiceCode | null>(null);
+  const [filter, setFilter] = useState<TimeFilterKey>("12M");
 
-  const toggleIndex = (i: SubIndice) => {
+  const toggleIndex = (i: SubIndiceCode) => {
     setShownIndices((cur) =>
       cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]
     );
@@ -41,7 +41,7 @@ export function ComparisonTable({ estaciones }: Props) {
   // Series del gráfico drill-down (una por estación)
   const chartSeries = drillIndex
     ? estaciones.flatMap((e, idx) => {
-        const serie = getSerieSubIndice(e.id, drillIndex);
+        const serie = getSerieSubIndice(e.id, drillIndex as any);
         const subSeries = aplicarFiltro(
           serie,
           filter,
