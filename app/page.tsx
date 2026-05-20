@@ -3,12 +3,15 @@
 import dynamic from "next/dynamic";
 import { RankingSidebar } from "@/components/RankingSidebar";
 import { AlertsPanel } from "@/components/AlertsPanel";
-import { IMPDistribution } from "@/components/IMPDistribution";
 import { StationsTable } from "@/components/StationsTable";
 import { CompararButton } from "@/components/CompararButton";
 import {
   ALERTAS_ORDENADAS,
+  ARQUETIPOS_LIST,
   ESTACIONES,
+  NOMBRES_SCORES,
+  NOMBRES_SCORES_EN,
+  SCORE_CODES,
   getResumenRed,
 } from "@/lib/constants";
 import { eurCompacto, score } from "@/lib/format";
@@ -39,10 +42,10 @@ export default function HomePage() {
           </h1>
           <p className="page-lede">
             Plataforma de decisión estratégica para la transformación del
-            portfolio durante la transición energética. El{" "}
-            <strong>Índice Maestro de Priorización (IMP)</strong> combina cinco
-            sub-índices ponderados para clasificar cada estación y proponer un
-            plan de acción.
+            portfolio durante la transición energética. Cada estación se evalúa
+            sobre <strong>6 scores independientes de oportunidad</strong> y se
+            clasifica en un <strong>arquetipo de cartera</strong> con su
+            recomendación de inversión.
           </p>
         </header>
 
@@ -54,9 +57,9 @@ export default function HomePage() {
             <span className="kpi-foot">Activos en cartera</span>
           </div>
           <div className="kpi">
-            <span className="kpi-label">IMP medio</span>
-            <span className="kpi-value">{score(resumen.impMedio)}</span>
-            <span className="kpi-foot">Señal ponderada de portfolio</span>
+            <span className="kpi-label">Arquetipos</span>
+            <span className="kpi-value">{resumen.arquetiposUnicos}</span>
+            <span className="kpi-foot">Diversidad estratégica de la cartera</span>
           </div>
           <div className="kpi">
             <span className="kpi-label">EBITDA agregado</span>
@@ -77,6 +80,65 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ---- 6 Scores promedio de la red --------------------------- */}
+        <section className="card" style={{ marginBottom: 24 }}>
+          <div className="card-header">
+            <div>
+              <h2 className="card-title">Scores promedio de la red</h2>
+              <p className="card-subtitle">
+                Seis dimensiones de oportunidad evaluadas de forma independiente.
+                Sin agregación en un índice maestro: cada score se lee por su cuenta.
+              </p>
+            </div>
+          </div>
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+              gap: 12,
+            }}
+          >
+            {SCORE_CODES.map((code) => (
+              <div
+                key={code}
+                className="kpi"
+                style={{ alignItems: "flex-start" }}
+                title={NOMBRES_SCORES_EN[code]}
+              >
+                <span
+                  className="kpi-label"
+                  style={{ fontWeight: 600, letterSpacing: "0.04em" }}
+                >
+                  {code} · {NOMBRES_SCORES[code]}
+                </span>
+                <span className="kpi-value">{score(resumen.scoresPromedio[code])}</span>
+                <div
+                  style={{
+                    width: "100%",
+                    height: 4,
+                    background: "rgba(255,255,255,0.08)",
+                    borderRadius: 4,
+                    overflow: "hidden",
+                    marginTop: 6,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${Math.max(0, Math.min(100, resumen.scoresPromedio[code]))}%`,
+                      height: "100%",
+                      background:
+                        "linear-gradient(90deg, var(--accent, #4cc2ff), var(--accent-2, #7cd3ff))",
+                    }}
+                  />
+                </div>
+                <span className="kpi-foot" style={{ opacity: 0.7 }}>
+                  {NOMBRES_SCORES_EN[code]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* ---- Map + Distribution ------------------------------------ */}
         <section className="grid grid-2-map" style={{ marginBottom: 24 }}>
           <div className="card">
@@ -84,46 +146,86 @@ export default function HomePage() {
               <div>
                 <h2 className="card-title">Mapa de la red</h2>
                 <p className="card-subtitle">
-                  Marcadores coloreados según la categoría IMP. Clic para abrir
-                  el cockpit de cada estación.
+                  Marcadores coloreados según el arquetipo de cartera. Clic para
+                  abrir el cockpit de cada estación.
                 </p>
               </div>
             </div>
             <NetworkMap estaciones={ESTACIONES} />
             <div className="map-legend">
-              <span className="item">
-                <span className="dot" style={{ background: "#1f7a4d" }} />
-                ★ Estrella
-              </span>
-              <span className="item">
-                <span className="dot" style={{ background: "#2faa66" }} />
-                Sólida
-              </span>
-              <span className="item">
-                <span className="dot" style={{ background: "#d9a23a" }} />
-                Estable
-              </span>
-              <span className="item">
-                <span className="dot" style={{ background: "#e07a3b" }} />
-                Vulnerable
-              </span>
-              <span className="item">
-                <span className="dot" style={{ background: "#c14454" }} />
-                Crítica
-              </span>
+              {ARQUETIPOS_LIST.map((arq) => (
+                <span className="item" key={arq.codigo}>
+                  <span className="dot" style={{ background: arq.colorMapa }} />
+                  {arq.nombre}
+                </span>
+              ))}
             </div>
           </div>
 
           <div className="card">
             <div className="card-header">
               <div>
-                <h2 className="card-title">Distribución del portfolio</h2>
+                <h2 className="card-title">Distribución por arquetipo</h2>
                 <p className="card-subtitle">
-                  Mix actual de estaciones por categoría IMP.
+                  Mix actual de la cartera por arquetipo de portfolio y nivel de
+                  inversión recomendado.
                 </p>
               </div>
             </div>
-            <IMPDistribution />
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {resumen.porArquetipo.map((row) => (
+                <div
+                  key={row.arquetipo.codigo}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "10px 1fr auto",
+                    gap: 12,
+                    alignItems: "flex-start",
+                    padding: "10px 0",
+                    borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      background: row.arquetipo.colorMapa,
+                      marginTop: 6,
+                    }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>
+                      {row.arquetipo.nombre}
+                    </div>
+                    <div style={{ opacity: 0.7, fontSize: 12, marginTop: 2 }}>
+                      {row.estaciones.map((e) => e.nombre).join(" · ")}
+                    </div>
+                    <div
+                      style={{
+                        opacity: 0.55,
+                        fontSize: 11,
+                        marginTop: 4,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      Inversión: {row.arquetipo.inversion}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 700,
+                      minWidth: 28,
+                      textAlign: "right",
+                    }}
+                  >
+                    {row.count}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -133,7 +235,10 @@ export default function HomePage() {
             <div>
               <h2 className="card-title">Ranking de estaciones</h2>
               <p className="card-subtitle">
-                Ordenado de mayor a menor IMP. Pesos: SEI 30% · OAI 20% · CTI 25% · RPC 10% · FCC 15%.
+                Cada estación se evalúa por su perfil sobre 6 scores
+                independientes y su arquetipo asignado. No hay índice maestro:
+                el orden visual usa el promedio de los 6 scores únicamente como
+                criterio de presentación.
               </p>
             </div>
           </div>
@@ -146,8 +251,8 @@ export default function HomePage() {
             <div>
               <h2 className="card-title">Alertas activas — snapshot del sistema</h2>
               <p className="card-subtitle">
-                Salida actual del motor de alertas. Cada alerta enlaza tipo,
-                severidad, estación, disparador, impacto y responsable.
+                Cada alerta enlaza tipo, severidad, estación, score afectado,
+                disparador, impacto y responsable.
               </p>
             </div>
           </div>
@@ -155,11 +260,11 @@ export default function HomePage() {
         </section>
 
         <div className="footer-note">
-          <strong>Nota.</strong> El IMP es orientativo, no prescriptivo. La
-          decisión final integra factores estratégicos no capturables en un
-          índice: acuerdos contractuales, valor inmobiliario, encaje con la red
-          y compromisos regulatorios. Pesos del IMP controlados desde la hoja
-          Portada del modelo.
+          <strong>Nota.</strong> Los 6 scores son orientativos, no prescriptivos.
+          Cada uno se lee de forma independiente: no se suman ni se ponderan en
+          un índice maestro. La decisión final integra factores no capturables
+          cuantitativamente: acuerdos contractuales, valor inmobiliario, encaje
+          con la red y compromisos regulatorios.
         </div>
       </main>
     </div>
