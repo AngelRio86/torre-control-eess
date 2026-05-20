@@ -64,7 +64,7 @@ export default function SubIndexDetailPage({
 
   // Serie del sub-índice global para gráfico header
   const serieGlobal = useMemo(
-    () => getSerieSubIndice(estacion.id, subIndiceUpper),
+    () => getSerieSubIndice(estacion.id, subIndiceUpper as any),
     [estacion.id, subIndiceUpper]
   );
   const chartSerieGlobal = aplicarFiltro(
