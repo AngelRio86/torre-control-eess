@@ -82,7 +82,7 @@ export default function SubIndexDetailPage({
     <div className="app-shell">
       <RankingSidebar />
       <main className="main">
-        <SubIndexDetailHeader estacion={estacion} subIndice={subIndiceUpper} />
+        <SubIndexDetailHeader estacion={estacion} subIndice={subIndiceUpper as any} />
 
         <FilterBar value={filter} onChange={setFilter} />
 
