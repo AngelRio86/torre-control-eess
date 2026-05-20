@@ -41,7 +41,7 @@ export default function SubIndexDetailPage({
   const [filter, setFilter] = useState<TimeFilterKey>("12M");
 
   const estacion = getEstacion(params.id);
-  const subIndiceUpper = params.subindice.toUpperCase() as SubIndice;
+  const subIndiceUpper = params.subindice.toUpperCase() as SubIndiceCode;
   if (!estacion || !SUB_INDICES_VALID.includes(subIndiceUpper)) {
     notFound();
   }
